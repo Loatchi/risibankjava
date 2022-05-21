@@ -48,7 +48,7 @@ public class User {
     LocalDateTime creationDate;
     LocalDateTime lastConnectionDate;
     String collection;
-    String stats;
+    UserStat stats;
     public User(long id,
                  @NotNull String customUsername,
                  boolean isMod,
@@ -57,7 +57,7 @@ public class User {
                  @NotNull LocalDateTime createDate,
                  @NotNull LocalDateTime lastConnectionDate,
                  String collection, //todo collection
-                 String stats //todo stats
+                 UserStat stats
                  ){
         this.id = id;
         this.customUsername = customUsername;
@@ -85,7 +85,7 @@ public class User {
     public @NotNull String getCustomUsername() {
         return customUsername;
     }
-    public String getStats() {
+    public UserStat getStats() {
         return stats;
     }
     public @NotNull String getUsername() {
@@ -139,6 +139,14 @@ public class User {
 
         json.put("id", ((Double)json.get("id")).longValue());
 
+        @SuppressWarnings("unchecked")
+        Map<String, Object> tmp = (Map<String, Object>) json.get("stats");
+        UserStat stats = new UserStat(
+                (Integer) tmp.get("media_count"),
+                (Integer) tmp.get("interact_count"),
+                (Integer) tmp.get("score")
+        );
+
         return new User(
                 (long) json.get("id"),
                 (String) json.get("username_custom"),
@@ -148,7 +156,7 @@ public class User {
                 LocalDateTime.parse( (String) json.get("created_at"), Utils.RISI_DATE_FORMAT),
                 LocalDateTime.parse( (String) json.get("last_seen_at"), Utils.RISI_DATE_FORMAT),
                 "",
-                ""
+                stats
                 );
     }
 
