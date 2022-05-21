@@ -228,6 +228,9 @@ public class User {
         List<Map<String, Object>> json= (List<Map<String, Object>>)
                 Utils.getJson(url, new TypeToken<List<Map<String, Object>>>(){}.getType());
 
+        if(json == null)
+            throw new RisibankException(new NullPointerException("Couldn't get the user."), url);
+
         @SuppressWarnings("unchecked")
         String username = (String) ((Map<String, Object>)(json.get(0).get("user"))).get("username_custom");
         return User.byUsername(username);
