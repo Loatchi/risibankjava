@@ -15,8 +15,8 @@ public class UserTest
 
         try {
 
-            //we should compare the given data with
-            // to compare with https://risibank.fr/top-contributeurs
+            // we should compare the given data
+            // with https://risibank.fr/top-contributeurs
 
             LinkedHashMap<String, UserStat> topUsers = User.topUsers();
             System.out.println(topUsers.keySet());
@@ -27,7 +27,7 @@ public class UserTest
             System.out.println(sameTopUser);
 
         } catch (RisibankException e) {
-            System.out.println(e.getCause());
+            e.getCause().printStackTrace();
         }
     }
 }
