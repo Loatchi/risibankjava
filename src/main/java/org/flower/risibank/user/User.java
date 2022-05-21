@@ -2,6 +2,8 @@ package org.flower.risibank.user;
 
 import com.google.gson.reflect.TypeToken;
 import org.flower.risibank.Utils;
+import org.flower.risibank.collection.Collection;
+import org.flower.risibank.collection.CollectionType;
 import org.flower.risibank.exceptions.RisibankException;
 import org.flower.risibank.exceptions.UserDoesNotExistException;
 import org.jetbrains.annotations.NotNull;
@@ -47,7 +49,7 @@ public class User {
     String username;
     LocalDateTime creationDate;
     LocalDateTime lastConnectionDate;
-    String collection;
+    List<Collection> collection;
     UserStat stats;
     public User(long id,
                  @NotNull String customUsername,
@@ -56,8 +58,8 @@ public class User {
                  @NotNull String username,
                  @NotNull LocalDateTime createDate,
                  @NotNull LocalDateTime lastConnectionDate,
-                 String collection, //todo collection
-                 UserStat stats
+                 @NotNull List<Collection> collection, //todo collection
+                 @NotNull UserStat stats
                  ){
         this.id = id;
         this.customUsername = customUsername;
@@ -70,7 +72,7 @@ public class User {
         this.stats = stats;
     }
 
-    public @NotNull Long getId() {
+    public long getId() {
         return id;
     }
     public @NotNull LocalDateTime getCreationDate() {
@@ -79,7 +81,7 @@ public class User {
     public @NotNull LocalDateTime getLastConnectionDate() {
         return lastConnectionDate;
     }
-    public String getCollection() {
+    public @NotNull List<Collection> getCollection() {
         return collection;
     }
     public @NotNull String getCustomUsername() {
@@ -90,6 +92,19 @@ public class User {
     }
     public @NotNull String getUsername() {
         return username;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User)) return false;
+        User user = (User) o;
+        return id == user.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
     @Override
@@ -147,7 +162,11 @@ public class User {
                 (Integer) tmp.get("score")
         );
 
-        return new User(
+        List<Collection> collections = new ArrayList<>();
+
+        // user is before collection so that we don't have to make more request to fetch
+        // collection but directly use this user instance as the owner
+        User user =  new User(
                 (long) json.get("id"),
                 (String) json.get("username_custom"),
                 (boolean) json.get("is_mod"),
@@ -155,9 +174,27 @@ public class User {
                 (String) json.get("username"),
                 LocalDateTime.parse( (String) json.get("created_at"), Utils.RISI_DATE_FORMAT),
                 LocalDateTime.parse( (String) json.get("last_seen_at"), Utils.RISI_DATE_FORMAT),
-                "",
+                collections,
                 stats
-                );
+        );
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> tmp2 = (List<Map<String, Object>>) json.get("collections");
+        for(Map<String, Object> map : tmp2){
+
+            Collection collection = new Collection(
+                    (Long) map.get("id"),
+                    user,
+                    (String) map.get("name"),
+                    CollectionType.valueOf(((String)json.get("type")).toUpperCase()),
+                    LocalDateTime.parse( (String) json.get("created_at"), Utils.RISI_DATE_FORMAT),
+                    null
+            );
+
+            collections.add(collection);
+        }
+
+        return user;
     }
 
     /**
