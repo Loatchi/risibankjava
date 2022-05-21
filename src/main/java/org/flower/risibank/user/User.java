@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  *
  * @author Loatchi
  */
-public class User {
+public class User extends UserPartial{
 
     /**
      * The regex the (custom) username must match to be valid.
@@ -42,10 +42,6 @@ public class User {
      */
     public static int USERNAME_MIN_LEN = 2;
 
-    long id;
-    String customUsername;
-    boolean isMod;
-    boolean isAdmin;
     String username;
     LocalDateTime creationDate;
     LocalDateTime lastConnectionDate;
@@ -61,19 +57,12 @@ public class User {
                  @NotNull List<Collection> collection, //todo collection
                  @NotNull UserStat stats
                  ){
-        this.id = id;
-        this.customUsername = customUsername;
-        this.isMod = isMod;
-        this.isAdmin = isAdmin;
+        super(id, customUsername, isMod, isAdmin);
         this.username = username;
         this.creationDate = createDate;
         this.lastConnectionDate = lastConnectionDate;
         this.collection = collection;
         this.stats = stats;
-    }
-
-    public long getId() {
-        return id;
     }
     public @NotNull LocalDateTime getCreationDate() {
         return creationDate;
@@ -84,27 +73,11 @@ public class User {
     public @NotNull List<Collection> getCollection() {
         return collection;
     }
-    public @NotNull String getCustomUsername() {
-        return customUsername;
-    }
     public UserStat getStats() {
         return stats;
     }
     public @NotNull String getUsername() {
         return username;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof User)) return false;
-        User user = (User) o;
-        return id == user.id;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 
     @Override
@@ -125,7 +98,7 @@ public class User {
      *      <p>{@code UserDoesNotExistException} if the username does not link to a user</p>
      *  </p>
      */
-    public static @NotNull User byUsername(String username) throws RisibankException {
+    public static @NotNull User byUsername(@NotNull String username) throws RisibankException {
 
         if(username.length() > USERNAME_MAX_LEN || username.length() < USERNAME_MIN_LEN)
             throw new RisibankException(
@@ -157,9 +130,9 @@ public class User {
         @SuppressWarnings("unchecked")
         Map<String, Object> tmp = (Map<String, Object>) json.get("stats");
         UserStat stats = new UserStat(
-                (Integer) tmp.get("media_count"),
-                (Integer) tmp.get("interact_count"),
-                (Integer) tmp.get("score")
+                ((Double) tmp.get("media_count")).intValue(),
+                ((Double) tmp.get("interact_count")).intValue(),
+                ((Double) tmp.get("score")).intValue()
         );
 
         List<Collection> collections = new ArrayList<>();
@@ -183,11 +156,11 @@ public class User {
         for(Map<String, Object> map : tmp2){
 
             Collection collection = new Collection(
-                    (Long) map.get("id"),
+                    ((Double) map.get("id")).longValue(),
                     user,
                     (String) map.get("name"),
-                    CollectionType.valueOf(((String)json.get("type")).toUpperCase()),
-                    LocalDateTime.parse( (String) json.get("created_at"), Utils.RISI_DATE_FORMAT),
+                    CollectionType.valueOf(( (String) map.get("type")).toUpperCase()),
+                    LocalDateTime.parse( (String) map.get("created_at"), Utils.RISI_DATE_FORMAT),
                     null
             );
 
@@ -271,5 +244,13 @@ public class User {
         @SuppressWarnings("unchecked")
         String username = (String) ((Map<String, Object>)(json.get(0).get("user"))).get("username_custom");
         return User.byUsername(username);
+    }
+
+    public static @NotNull User byUserPartial(@NotNull UserPartial partial) throws RisibankException {
+        try {
+            return User.byUsername(partial.customUsername);
+        } catch (RisibankException e) {
+            return User.byId(partial.id);
+        }
     }
 }

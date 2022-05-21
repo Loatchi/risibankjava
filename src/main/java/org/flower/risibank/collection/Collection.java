@@ -3,7 +3,6 @@ package org.flower.risibank.collection;
 import org.flower.risibank.user.User;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.ObjectStreamException;
 import java.time.LocalDateTime;
 import java.util.List;
 

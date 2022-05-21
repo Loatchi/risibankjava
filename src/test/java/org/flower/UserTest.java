@@ -25,6 +25,7 @@ public class UserTest
             System.out.println(topUser);
             User sameTopUser = User.byId(topUser.getId());
             System.out.println(sameTopUser);
+            System.out.println(topUser.isPartial());
 
         } catch (RisibankException e) {
             e.getCause().printStackTrace();
