@@ -1,11 +1,15 @@
 package org.flower;
 
 import org.flower.risibank.exceptions.RisibankException;
+import org.flower.risibank.media.MediaPartial;
 import org.flower.risibank.user.User;
+import org.flower.risibank.user.UserMediaFlow;
 import org.flower.risibank.user.UserStat;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 public class UserTest
 {
@@ -26,6 +30,15 @@ public class UserTest
             User sameTopUser = User.byId(topUser.getId());
             System.out.println(sameTopUser);
             System.out.println(topUser.isPartial());
+
+            UserMediaFlow mediaFlow = topUser.getMedias();
+
+            // should get the portfolio of the top contributor
+            while (mediaFlow.hasNext()) {
+                List<MediaPartial> mediaPartialList = mediaFlow.next();
+
+                System.out.println(Arrays.toString(mediaPartialList.stream().map(MediaPartial::getSource).toArray()));
+            }
 
         } catch (RisibankException e) {
             e.getCause().printStackTrace();
